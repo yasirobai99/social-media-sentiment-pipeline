@@ -16,3 +16,9 @@ powerbi/*.pbix
 Thumbs.db
 desktop.ini
 *.swp
+
+.vscode
+.github
+pysql.txt
+pytest.ini
+sentiment.sql
