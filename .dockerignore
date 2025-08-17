@@ -1,0 +1,11 @@
+.git
+.gitignore
+.env
+__pycache__/
+.pytest_cache/
+logs/
+backups/
+powerbi/*.pbix
+.DS_Store
+Thumbs.db
+desktop.ini

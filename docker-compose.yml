@@ -1,0 +1,80 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: sentiment
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@local.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+  airflow-webserver:
+    image: apache/airflow:2.9.1-python3.9
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql://postgres:postgres123@postgres:5432/sentiment
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__WEBSERVER__SECRET_KEY: supersecretkey
+      AIRFLOW__CORE__FERNET_KEY: "THIS_IS_A_RANDOM_TEST_KEY=="
+      PYTHONPATH: /opt/airflow:/opt/airflow/src
+      _PIP_ADDITIONAL_REQUIREMENTS: >
+        pandas==2.1.4
+        psycopg2-binary==2.9.9
+        sqlalchemy==1.4.50
+        kaggle==1.6.17
+        textblob==0.17.1
+        nltk==3.8.1
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./src:/opt/airflow/src
+      - ./config:/home/airflow/.config/kaggle
+    ports:
+      - "8080:8080"
+    command: >
+      bash -c "airflow db upgrade &&
+               airflow users create --username admin --password admin --firstname Airflow --lastname Admin --role Admin --email admin@local.com &&
+               airflow webserver"
+
+  airflow-scheduler:
+    image: apache/airflow:2.9.1-python3.9
+    depends_on:
+      - airflow-webserver
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql://postgres:postgres123@postgres:5432/sentiment
+      AIRFLOW__CORE__FERNET_KEY: "THIS_IS_A_RANDOM_TEST_KEY=="
+      AIRFLOW__WEBSERVER__SECRET_KEY: supersecretkey
+      PYTHONPATH: /opt/airflow:/opt/airflow/src
+      _PIP_ADDITIONAL_REQUIREMENTS: >
+        pandas==2.1.4
+        psycopg2-binary==2.9.9
+        sqlalchemy==1.4.50
+        kaggle==1.6.17
+        textblob==0.17.1
+        nltk==3.8.1
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./src:/opt/airflow/src
+      - ./config:/home/airflow/.config/kaggle
+    command: >
+      bash -c "airflow db upgrade && airflow scheduler"
+
+volumes:
+  postgres_data:

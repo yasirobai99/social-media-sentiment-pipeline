@@ -1,0 +1,11 @@
+{
+  "python.defaultInterpreterPath": "/usr/bin/python3",
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/.DS_Store": true
+  },
+  "python.analysis.autoSearchPaths": true,
+  "python.analysis.diagnosticMode": "workspace",
+  "docker.composeBuild": "default"
+}
